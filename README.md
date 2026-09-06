@@ -3,7 +3,7 @@
 Draw a shape. It becomes a list of complex numbers, the discrete Fourier transform turns that list
 into circles, and a chain of those circles draws it back.
 
-**[Live demo](https://nazmul057.github.io/fourier_signature/)** · no build step, no dependencies
+**[Live demo](https://nazmul057.github.io/fourier-signature/)** · no build step, no dependencies
 
 <!-- Record a loop with the Record button in the app, convert it, and drop it in here:
      ffmpeg -i fourier-signature.webm -vf "fps=24,scale=760:-1:flags=lanczos" demo.gif -->
