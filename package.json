@@ -1,0 +1,12 @@
+{
+  "name": "fourier-signature",
+  "version": "1.0.0",
+  "description": "Draw anything; watch a chain of rotating circles redraw it from its Fourier series.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "serve": "python -m http.server 8000"
+  },
+  "license": "MIT"
+}

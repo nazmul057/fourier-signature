@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Fourier Signature</title>
+    <meta
+      name="description"
+      content="Draw a shape and watch a chain of rotating circles redraw it from its Fourier series."
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='13' fill='none' stroke='%2338bdf8' stroke-width='2'/><circle cx='24' cy='16' r='6' fill='none' stroke='%23fbbf24' stroke-width='2'/></svg>"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <header class="masthead">
+        <h1>Fourier Signature</h1>
+        <p>
+          Draw a shape. Its outline becomes a list of complex numbers, the discrete Fourier
+          transform turns that list into circles, and the circles draw it back.
+        </p>
+      </header>
+
+      <div class="stage">
+        <canvas id="stage"></canvas>
+        <p class="hint" id="hint">Draw anything here</p>
+        <dl class="readout">
+          <div><dt>terms</dt><dd id="readout-terms">—</dd></div>
+          <div><dt>samples</dt><dd id="readout-samples">—</dd></div>
+          <div><dt>fit error</dt><dd id="readout-error">—</dd></div>
+        </dl>
+      </div>
+
+      <section class="controls" aria-label="Controls">
+        <div class="control control--slider">
+          <label for="terms">
+            Terms <output id="terms-value" for="terms">1</output>
+          </label>
+          <input id="terms" type="range" min="0" max="1000" value="300" />
+        </div>
+
+        <div class="control control--slider">
+          <label for="speed">
+            Speed <output id="speed-value" for="speed">1.0×</output>
+          </label>
+          <input id="speed" type="range" min="5" max="300" value="100" />
+        </div>
+
+        <div class="control control--buttons">
+          <button type="button" id="play" class="button button--primary">Pause</button>
+          <button type="button" id="clear" class="button">Clear</button>
+          <button type="button" id="record" class="button">Record</button>
+          <button type="button" id="share" class="button">Copy link</button>
+        </div>
+
+        <div class="control control--toggles">
+          <label class="toggle">
+            <input type="checkbox" id="show-circles" checked /> Circles
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="show-original" checked /> Drawing
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="close-path" checked /> Close loop
+          </label>
+        </div>
+
+        <div class="control control--presets">
+          <span class="control__label">Presets</span>
+          <div class="preset-row" id="presets"></div>
+        </div>
+      </section>
+
+      <footer class="colophon">
+        <span id="status" class="status" role="status"></span>
+      </footer>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

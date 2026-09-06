@@ -1,0 +1,344 @@
+:root {
+  color-scheme: dark;
+
+  --ink: #e7ecf3;
+  --ink-dim: #93a1b5;
+  --ink-faint: #5b6880;
+  --ground: #0b0f17;
+  --panel: #131a26;
+  --panel-edge: #212c3d;
+  --accent: #38bdf8;
+  --accent-warm: #fbbf24;
+
+  --radius: 10px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Masthead ---------------------------------------------------------------- */
+
+.masthead h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.masthead p {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--ink-dim);
+}
+
+/* Stage ------------------------------------------------------------------- */
+
+.stage {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  min-height: 320px;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  background: #0d121c;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Without this, a touch drag scrolls the page instead of drawing. */
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.hint {
+  position: absolute;
+  inset: auto 0 50% 0;
+  margin: 0;
+  text-align: center;
+  color: var(--ink-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 11px;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+.hint[hidden] {
+  display: block;
+  opacity: 0;
+}
+
+.readout {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  margin: 0;
+  display: flex;
+  gap: 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.readout div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.readout dt {
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 9px;
+}
+
+.readout dd {
+  margin: 0;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Controls ---------------------------------------------------------------- */
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.control--buttons,
+.control--toggles,
+.control--presets {
+  grid-column: 1 / -1;
+}
+
+.control label,
+.control__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.control output {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+input[type='range'] {
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--panel-edge);
+}
+
+input[type='range']::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--panel-edge);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5.5px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.control--buttons {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 7px 14px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 7px;
+  background: #1a2333;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.button:hover {
+  background: #222e42;
+  border-color: #33415a;
+}
+
+.button--primary {
+  border-color: #235f80;
+  background: #10344a;
+  color: #bfe6fb;
+}
+
+.button--primary:hover {
+  background: #16455f;
+}
+
+.button[aria-pressed='true'] {
+  border-color: #7f3b3b;
+  background: #43201f;
+  color: #ffc9c4;
+}
+
+.control--toggles {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink-dim);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.toggle input {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset {
+  padding: 5px 12px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-dim);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.preset:hover {
+  color: var(--ink);
+  border-color: #33415a;
+}
+
+.preset[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Colophon ---------------------------------------------------------------- */
+
+.colophon {
+  min-height: 20px;
+  color: var(--ink-faint);
+  font-size: 12px;
+}
+
+.status {
+  transition: opacity 200ms ease;
+}
+
+.status:empty {
+  opacity: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .app {
+    padding: 20px 14px 32px;
+  }
+
+  .controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stage {
+    aspect-ratio: 1 / 1;
+  }
+
+  .readout {
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint,
+  .status,
+  .button {
+    transition: none;
+  }
+}
