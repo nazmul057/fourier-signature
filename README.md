@@ -5,8 +5,13 @@ into circles, and a chain of those circles draws it back.
 
 **[Live demo](https://nazmul057.github.io/fourier-signature/)** · no build step, no dependencies
 
-<!-- Record a loop with the Record button in the app, convert it, and drop it in here:
-     ffmpeg -i fourier-signature.webm -vf "fps=24,scale=760:-1:flags=lanczos" demo.gif -->
+<!-- To refresh this: record the window with ScreenToGif and export straight to
+     docs/demo.gif at ~760px wide, 15-20fps. The app's own Record button captures
+     the canvas element only, so it misses the circle list beside it. If you do
+     start from a .webm, convert it in two passes -- a generic palette bands
+     badly on a dark background with a bright gradient trail:
+       ffmpeg -i in.webm -vf "fps=20,scale=760:-1:flags=lanczos,palettegen=stats_mode=diff" -y palette.png
+       ffmpeg -i in.webm -i palette.png -lavfi "fps=20,scale=760:-1:flags=lanczos,paletteuse=dither=bayer:bayer_scale=3" -y docs/demo.gif -->
 
 ![The signature preset being redrawn by its epicycles](docs/demo.gif)
 
