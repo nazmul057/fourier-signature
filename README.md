@@ -57,6 +57,10 @@ once, when you lift the pen. An FFT would buy nothing here and cost the reader t
   start each cycle, and the series rings at the seam for the same reason.
 - **Watch the fit error** in the top-left as you drag the slider. At full terms it reads 0.00 px —
   the reconstruction is exact at every sample point, which is what "the DFT is invertible" means.
+- **Scroll the circle list** on the right. Every term in the chain is listed with its frequency,
+  radius and phase, biggest first, with a dashed line marking the slider's cut and a few excluded
+  terms shown below it. Hover a row to pick that circle out of the chain on the canvas — high
+  frequency terms are tiny, so hovering also draws a locator ring around ones too small to see.
 - **Copy link.** The drawing itself is packed into the URL, quantised to 12 bits per coordinate.
 
 ## Running it

@@ -2,7 +2,15 @@ import { analyze, chain, evaluate } from './dft.js';
 import { setupCanvas, trackDrawing } from './input.js';
 import { presets } from './presets.js';
 import { bounds, fitTo, resample } from './resample.js';
-import { clear, drawEpicycles, drawPath, drawTip, drawTrail, THEME } from './renderer.js';
+import {
+  clear,
+  drawEpicycles,
+  drawHighlight,
+  drawPath,
+  drawTip,
+  drawTrail,
+  THEME,
+} from './renderer.js';
 import { linkForPath, pathFromLocation } from './share.js';
 
 /** Samples fed to the DFT. Also the number of terms it can produce. */
@@ -13,6 +21,8 @@ const OUTLINE = 720;
 const ERROR_SAMPLES = 128;
 /** Seconds for one full lap at 1x. */
 const LAP_SECONDS = 6;
+/** Excluded terms listed below the cut, so you can see what the slider is leaving out. */
+const PREVIEW_ROWS = 12;
 
 const el = {
   canvas: document.getElementById('stage'),
@@ -29,6 +39,8 @@ const el = {
   showOriginal: document.getElementById('show-original'),
   closePath: document.getElementById('close-path'),
   presets: document.getElementById('presets'),
+  termList: document.getElementById('term-list'),
+  termListFoot: document.getElementById('term-list-foot'),
   status: document.getElementById('status'),
   readoutTerms: document.getElementById('readout-terms'),
   readoutSamples: document.getElementById('readout-samples'),
@@ -55,6 +67,11 @@ const state = {
   mode: 'empty', // 'empty' | 'drawing' | 'playing'
   stroke: [],
   needsRebuild: false,
+  /** One <li> per term, built once per analysis and then only restyled. */
+  rows: [],
+  visibleRows: 0,
+  /** Term index the pointer is over in the list, or -1. */
+  highlight: -1,
 };
 
 const { ctx, size } = setupCanvas(el.canvas, () => {
@@ -84,8 +101,10 @@ function analysePath() {
   const { center, terms } = analyze(state.samples);
   state.center = center;
   state.terms = terms;
+  state.highlight = -1;
 
   applyTermSlider();
+  buildTermRows();
 }
 
 function reset() {
@@ -96,6 +115,11 @@ function reset() {
   state.outline = [];
   state.mode = 'empty';
   state.t = 0;
+  state.highlight = -1;
+  state.rows = [];
+  state.visibleRows = 0;
+  el.termList.replaceChildren();
+  el.termListFoot.textContent = '—';
   el.hint.hidden = false;
   markPresetActive(null);
   updateReadout();
@@ -117,7 +141,89 @@ function applyTermSlider() {
   el.termsValue.textContent = state.terms.length
     ? `${state.termCount} / ${state.terms.length}`
     : '—';
+
+  // Hovering a row that the slider has just excluded should stop highlighting.
+  if (state.highlight >= state.termCount) state.highlight = -1;
+
+  syncTermRows();
   state.needsRebuild = true;
+}
+
+/* The circle list ---------------------------------------------------------- */
+
+const formatFreq = (freq) => (freq > 0 ? `+${freq}` : String(freq));
+const formatPhase = (phase) => `${Math.round((phase * 180) / Math.PI)}°`;
+
+/**
+ * Build one row per term, once, when the path changes.
+ *
+ * Rows are created up front and then only restyled, never rebuilt. Dragging the
+ * slider changes which rows are active, and regenerating five hundred rows on
+ * every frame of that drag would be the slowest thing in the app by far.
+ */
+function buildTermRows() {
+  state.rows = state.terms.map((term, index) => {
+    const row = document.createElement('li');
+    row.className = 'term';
+    row.dataset.index = String(index);
+
+    for (const text of [
+      String(index + 1),
+      formatFreq(term.freq),
+      term.amp.toFixed(1),
+      formatPhase(term.phase),
+    ]) {
+      const cell = document.createElement('span');
+      cell.textContent = text;
+      row.append(cell);
+    }
+
+    // Only terms actually in the chain have a circle to point at.
+    row.addEventListener('mouseenter', () => {
+      if (index < state.termCount) state.highlight = index;
+    });
+    row.addEventListener('mouseleave', () => {
+      if (state.highlight === index) state.highlight = -1;
+    });
+
+    return row;
+  });
+
+  el.termList.replaceChildren(...state.rows);
+  state.visibleRows = 0;
+  syncTermRows(true);
+}
+
+/**
+ * Restyle the rows around the cut line after the term count moves.
+ *
+ * Only rows whose state actually changed are touched: everything between the
+ * old and new cut, plus the preview window past it. A one-step slider nudge
+ * touches thirteen rows rather than five hundred.
+ */
+function syncTermRows(rebuilt = false) {
+  if (state.rows.length === 0) {
+    el.termListFoot.textContent = '—';
+    return;
+  }
+
+  const visible = Math.min(state.rows.length, state.termCount + PREVIEW_ROWS);
+  const from = rebuilt ? 0 : Math.max(0, Math.min(state.visibleRows, visible) - PREVIEW_ROWS - 1);
+  const to = rebuilt ? state.rows.length : Math.max(state.visibleRows, visible);
+
+  for (let i = from; i < to; i++) {
+    const row = state.rows[i];
+    row.hidden = i >= visible;
+
+    if (i < state.termCount) row.className = 'term term--active';
+    else if (i === state.termCount) row.className = 'term term--preview term--cut';
+    else row.className = 'term term--preview';
+  }
+
+  state.visibleRows = visible;
+  el.termListFoot.textContent = `${state.termCount} in the chain · ${
+    state.rows.length - state.termCount
+  } left out`;
 }
 
 /**
@@ -227,17 +333,31 @@ function render() {
     drawPath(ctx, state.samples, { color: THEME.original, width: 1, dash: [4, 4], closed: true });
   }
 
-  const tip = el.showCircles.checked
-    ? drawChain()
-    : evaluate(state.center, state.terms, state.termCount, state.t);
-
+  // Chain first, then the trail over it: the drawing should read on top of the
+  // scaffolding that produced it.
+  const tip = drawChain();
   drawTrail(ctx, state.outline, Math.floor(state.t * OUTLINE) + 1);
   drawTip(ctx, tip);
 }
 
+/**
+ * Draw whatever of the chain is wanted and return the pen tip.
+ *
+ * The joints are only walked when something needs them -- with circles hidden
+ * and nothing hovered, the tip alone is cheaper.
+ */
 function drawChain() {
+  const showCircles = el.showCircles.checked;
+  const highlight = state.highlight;
+
+  if (!showCircles && highlight < 0) {
+    return evaluate(state.center, state.terms, state.termCount, state.t);
+  }
+
   const joints = chain(state.center, state.terms, state.termCount, state.t);
-  drawEpicycles(ctx, joints);
+  if (showCircles) drawEpicycles(ctx, joints);
+  if (highlight >= 0) drawHighlight(ctx, joints, highlight);
+
   return joints[joints.length - 1];
 }
 

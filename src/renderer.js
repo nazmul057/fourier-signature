@@ -10,6 +10,9 @@ export const THEME = {
   trail: '#38bdf8',
   trailGlow: 'rgba(56, 189, 248, 0.18)',
   tip: '#fbbf24',
+  // Deliberately not cyan or amber: the highlight has to be findable among a
+  // trail and a pen tip that are already using those.
+  highlight: '#f472b6',
 };
 
 export function clear(ctx, size) {
@@ -84,6 +87,56 @@ export function drawEpicycles(ctx, joints) {
     ctx.lineTo(joints[i + 1].x, joints[i + 1].y);
   }
   ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * Pick one circle out of the chain and make it findable.
+ *
+ * Most of the chain is circles too small to point at, so this draws more than
+ * the circle itself: the spoke, a dot on the joint, and -- when the circle is
+ * smaller than the dot -- a locator ring around it. Without that last part,
+ * hovering a high-frequency term highlights something invisible.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {{x: number, y: number}[]} joints from `chain()`
+ * @param {number} index which term, counting from zero
+ */
+export function drawHighlight(ctx, joints, index) {
+  if (index < 0 || index >= joints.length - 1) return;
+
+  const centre = joints[index];
+  const tip = joints[index + 1];
+  const radius = Math.hypot(tip.x - centre.x, tip.y - centre.y);
+
+  ctx.save();
+  ctx.strokeStyle = THEME.highlight;
+  ctx.lineWidth = 1.5;
+
+  if (radius >= 0.5) {
+    ctx.beginPath();
+    ctx.arc(centre.x, centre.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(centre.x, centre.y);
+  ctx.lineTo(tip.x, tip.y);
+  ctx.stroke();
+
+  ctx.fillStyle = THEME.highlight;
+  ctx.beginPath();
+  ctx.arc(tip.x, tip.y, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (radius < 14) {
+    ctx.setLineDash([2, 3]);
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath();
+    ctx.arc(centre.x, centre.y, 14, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 
   ctx.restore();
 }

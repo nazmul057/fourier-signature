@@ -24,14 +24,24 @@
         </p>
       </header>
 
-      <div class="stage">
-        <canvas id="stage"></canvas>
-        <p class="hint" id="hint">Draw anything here</p>
-        <dl class="readout">
-          <div><dt>terms</dt><dd id="readout-terms">—</dd></div>
-          <div><dt>samples</dt><dd id="readout-samples">—</dd></div>
-          <div><dt>fit error</dt><dd id="readout-error">—</dd></div>
-        </dl>
+      <div class="workspace">
+        <div class="stage">
+          <canvas id="stage"></canvas>
+          <p class="hint" id="hint">Draw anything here</p>
+          <dl class="readout">
+            <div><dt>terms</dt><dd id="readout-terms">—</dd></div>
+            <div><dt>samples</dt><dd id="readout-samples">—</dd></div>
+            <div><dt>fit error</dt><dd id="readout-error">—</dd></div>
+          </dl>
+        </div>
+
+        <aside class="spectrum" aria-label="Circles in the chain">
+          <div class="spectrum__head">
+            <span>#</span><span>freq</span><span>radius</span><span>phase</span>
+          </div>
+          <ol class="spectrum__list" id="term-list"></ol>
+          <p class="spectrum__foot" id="term-list-foot">—</p>
+        </aside>
       </div>
 
       <section class="controls" aria-label="Controls">
